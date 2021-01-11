@@ -1,0 +1,22 @@
+syntax = "proto3";
+package cart_types;
+
+option go_package = "proto/cart";
+option php_namespace = "app\\components\\proto\\cart";
+
+// 来源
+enum sourcePlatform {
+    PLUM = 0;       // 红布林APP
+    LIVE = 1;       // 直播APP
+}
+
+// 删除商品返回结构
+message DeleteProduct {
+    int32  id            = 1;
+    string productName   = 2;
+    string brandName     = 3;
+    int32  brandID       = 4;
+    int32  categoryID    = 5;
+    string salePrice     = 6;
+    string discountPrice = 7;
+}

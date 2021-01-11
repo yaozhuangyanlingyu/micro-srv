@@ -1,0 +1,32 @@
+syntax = "proto3";
+package cart_params;
+import "proto/cart/cart_types.proto";
+
+option go_package       = "proto/cart";
+option php_namespace    = "app\\components\\proto\\cart";
+
+// 列表接口
+message ListRequest {
+    int32                       userID          = 1;
+    string                      keyID           = 2;
+    cart_types.sourcePlatform   sourcePlatform  = 3;
+};
+message ListResponse {
+    int64   code    = 1;
+    string  msg     = 2;
+};
+
+// 删除商品接口
+message DeleteRequest {
+    int32           userID      = 1;                // 用户ID
+    repeated int32  productID   = 2;                // 商品ID
+    string          keyID       = 3;                // 没有登录时用户身份标识
+    cart_types.sourcePlatform   sourcePlatform = 4; // 来源平台
+}
+
+message DeleteResponse {
+    int64           code    = 1;
+    string          msg     = 2;
+    repeated cart_types.DeleteProduct deleteProduct = 3;    // 统计用商品数据列表
+}
+

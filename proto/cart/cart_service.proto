@@ -1,0 +1,12 @@
+syntax = "proto3";
+package cart_service;
+import "proto/cart/cart_params.proto";
+
+option go_package = "proto/cart";
+option php_namespace = "app\\components\\proto\\cart";
+
+service Cart {
+    // 购物车列表
+    rpc List(cart_params.ListRequest) returns (cart_params.ListResponse);
+}
+
