@@ -36,6 +36,8 @@ var _ server.Option
 type CartService interface {
 	// 购物车列表
 	List(ctx context.Context, in *ListRequest, opts ...client.CallOption) (*ListResponse, error)
+	// 删除购物车商品
+	Delete(ctx context.Context, in *DeleteRequest, opts ...client.CallOption) (*DeleteResponse, error)
 }
 
 type cartService struct {
@@ -66,16 +68,29 @@ func (c *cartService) List(ctx context.Context, in *ListRequest, opts ...client.
 	return out, nil
 }
 
+func (c *cartService) Delete(ctx context.Context, in *DeleteRequest, opts ...client.CallOption) (*DeleteResponse, error) {
+	req := c.c.NewRequest(c.name, "Cart.Delete", in)
+	out := new(DeleteResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Cart service
 
 type CartHandler interface {
 	// 购物车列表
 	List(context.Context, *ListRequest, *ListResponse) error
+	// 删除购物车商品
+	Delete(context.Context, *DeleteRequest, *DeleteResponse) error
 }
 
 func RegisterCartHandler(s server.Server, hdlr CartHandler, opts ...server.HandlerOption) error {
 	type cart interface {
 		List(ctx context.Context, in *ListRequest, out *ListResponse) error
+		Delete(ctx context.Context, in *DeleteRequest, out *DeleteResponse) error
 	}
 	type Cart struct {
 		cart
@@ -90,4 +105,8 @@ type cartHandler struct {
 
 func (h *cartHandler) List(ctx context.Context, in *ListRequest, out *ListResponse) error {
 	return h.CartHandler.List(ctx, in, out)
+}
+
+func (h *cartHandler) Delete(ctx context.Context, in *DeleteRequest, out *DeleteResponse) error {
+	return h.CartHandler.Delete(ctx, in, out)
 }
