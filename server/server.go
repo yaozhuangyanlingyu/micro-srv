@@ -5,6 +5,8 @@ import (
 	"github.com/micro/go-micro/v2/registry"
 	"github.com/micro/go-plugins/registry/consul/v2"
 	"github.com/yaozhuangyanlingyu/micro-srv/loader"
+	"github.com/yaozhuangyanlingyu/micro-srv/logger"
+	"github.com/yaozhuangyanlingyu/micro-srv/wrap"
 )
 
 // 创建micro.Service用
@@ -18,9 +20,12 @@ type AplumServiceConfig struct {
 
 // 创建micro服务
 func NewAplumService(param AplumServiceConfig) micro.Service {
+	// 初始化日志组件
+	logger.InitLogger(param.ServiceName)
+
+	// 创建micro服务
 	service := micro.NewService(
-		//micro.Name(loader.Config.GetString("server.name")),
-		//micro.Address(loader.Config.GetString("server.address")),
+		micro.WrapHandler(wrap.LogRespWrapper),
 		micro.Name(param.ServiceName),
 		micro.Address(param.ServiceAddr),
 		micro.Registry(consulRegistry()),
