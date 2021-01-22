@@ -12,7 +12,7 @@ import (
 var zapLogger *zap.Logger
 
 // 初始化日志库
-func InitLogger(serviceName string) {
+func InitLogger(logLevel string, serviceName string, wxHost string, wxEmail string) {
 	hook := lumberjack.Logger{
 		Filename:   "./logs/" + serviceName + ".log", // 日志文件路径
 		MaxSize:    128,                              // 每个日志文件保存的最大尺寸 单位：M
@@ -38,13 +38,23 @@ func InitLogger(serviceName string) {
 
 	// 设置日志级别
 	atomicLevel := zap.NewAtomicLevel()
-	atomicLevel.SetLevel(zap.InfoLevel)
+	atomicLevel.SetLevel(convertToZapLogLevel(logLevel))
+
+	// 报警代码
+	wxpush := NewWxPush(wxHost, wxEmail)
 
 	core := zapcore.NewCore(
 		zapcore.NewJSONEncoder(encoderConfig),                                           // 编码器配置
 		zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), zapcore.AddSync(&hook)), // 打印到控制台和文件
 		atomicLevel, // 日志级别
 	)
+
+	// 错误日志上报
+	errorLevel := zap.NewAtomicLevel()
+	errorLevel.SetLevel(zap.ErrorLevel)
+	errorReportCore := zapcore.NewCore(zapcore.NewJSONEncoder(encoderConfig), zapcore.NewMultiWriteSyncer(wxpush), errorLevel)
+
+	teeCore := zapcore.NewTee(core, errorReportCore)
 
 	// 开启开发模式，堆栈跟踪
 	caller := zap.AddCaller()
@@ -56,10 +66,34 @@ func InitLogger(serviceName string) {
 	filed := zap.Fields(zap.String("serviceName", serviceName))
 
 	// 构造日志
-	zapLogger = zap.New(core, caller, development, filed)
+	zapLogger = zap.New(teeCore, caller, development, filed)
+}
 
+func convertToZapLogLevel(logLevel string) zapcore.Level {
+	m := map[string]zapcore.Level{
+		"debug": zapcore.DebugLevel,
+		"info":  zapcore.InfoLevel,
+		"warn":  zapcore.WarnLevel,
+		"error": zapcore.ErrorLevel,
+	}
+	if level, ok := m[logLevel]; ok {
+		return level
+	}
+	return zapcore.InfoLevel
+}
+
+func Debug(msg string, fields ...zapcore.Field) {
+	zapLogger.Debug(msg, fields...)
 }
 
 func Info(msg string, fields ...zapcore.Field) {
 	zapLogger.Info(msg, fields...)
+}
+
+func Warn(msg string, fields ...zapcore.Field) {
+	zapLogger.Warn(msg, fields...)
+}
+
+func Error(msg string, fields ...zapcore.Field) {
+	zapLogger.Error(msg, fields...)
 }
