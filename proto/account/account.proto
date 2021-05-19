@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package account;
+
+option go_package    = "proto/account";
+
+// AccountService 账户服务
+service AccountService {
+    // RedbagBalanceList 获取用户的红包流水记录
+    rpc RedbagBalanceLogList(RedbagBalanceLogListRequest)returns (RedbagBalanceLogListResponse){}
+}
+
+// RedbagBalanceListRequest 用户红包流水日志请求
+message RedbagBalanceLogListRequest {
+    int64 user_id = 1;  // 必填,用户ID
+    int32 page    = 2;  // 可选,当前页,默认第1页
+    int32 limit   = 3;  // 可选,每页大小,默认10
+}
+
+// RedbagBalanceListResponse 用户红包流水日志响应
+message RedbagBalanceLogListResponse {
+    int64 code                            = 1;  // 响应码,200成功、非200异常
+    string msg                            = 2;  // 响应信息
+    int32 page                            = 3;  // 当前页
+    int32 limit                           = 4;  // 每页大小
+    repeated RedbagBalanceLog balance_log = 5;  // 红包余额流水列表。
+}
+
+// RedbagBalanceLog 红包流水记录
+message RedbagBalanceLog {
+    string amount       = 1;  //本次变动的金额值 ,单位：元
+    string balance      = 2;  //在本次操作过后的余额,单位：元
+    int32 business_type = 3;  //业务类型(注：1-99扣减类型 100-199充值类型)：1(下单扣减)、2(红包过期扣减)、100(红包充值)、101(订单退款)
+    int64 business_id   = 4;  //业务ID
+    int64 business_time = 5;  //记账时间戳。单位：秒
+    string data         = 6;  //冗余字段备用
+    string remark       = 7;  //备注
+}

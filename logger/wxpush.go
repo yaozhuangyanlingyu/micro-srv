@@ -35,8 +35,12 @@ func (this *WxPush) Sync() error {
 // 发送推送
 func (this *WxPush) push(msg string) error {
 	monitorUrl := fmt.Sprintf("%s?email=%s&msg=%s", this.host, this.email, url.QueryEscape(msg))
-	resp, _ := http.Get(monitorUrl)
-	//defer resp.Body.Close()
-	fmt.Println(resp)
+	fmt.Println(monitorUrl)
+	resp, err := http.Get(monitorUrl)
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+	defer resp.Body.Close()
 	return nil
 }
